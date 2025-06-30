@@ -71,11 +71,12 @@ class Registrar : AppCompatActivity() {
                             .build()
 
                         user?.updateProfile(profileUpdates)?.addOnCompleteListener {
+                            auth.setLanguageCode("es")
                             user.sendEmailVerification().addOnCompleteListener { verifyTask ->
                                 if (verifyTask.isSuccessful) {
                                     Toast.makeText(
                                         this,
-                                        "Verification email sent. Please check your inbox.",
+                                        "Correo de verificación enviado. Revisa tu bandeja de entrada.",
                                         Toast.LENGTH_LONG
                                     ).show()
 
@@ -87,7 +88,7 @@ class Registrar : AppCompatActivity() {
                                                 "nombre" to nombres,
                                                 "email" to email,
                                                 "token" to token, // ✅ Agregamos token
-                                                "notifications_enabled" to true // ✅ Guardamos el valor por defecto
+                                                "notifications_enabled" to false // ✅ Guardamos el valor por defecto
                                             )
 
                                             db.collection("users")

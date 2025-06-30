@@ -96,7 +96,7 @@ class MainActivity : AppCompatActivity() {
                     .addOnSuccessListener {
                         Log.d("FCM", "Token guardado correctamente")
                         // 👇 NUEVO: mostrar token en pantalla
-                        Toast.makeText(this, "TOKEN ACTUAL:\n$token", Toast.LENGTH_LONG).show()
+                        //Toast.makeText(this, "TOKEN ACTUAL:\n$token", Toast.LENGTH_LONG).show()
                     }
                     .addOnFailureListener { Log.e("FCM", "Error al guardar token", it) }
             }

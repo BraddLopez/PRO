@@ -87,7 +87,19 @@ class BeachDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user == null) {
+            // Redirigir al login si no hay sesión activa
+            val intent = Intent(this, LoginWelcomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+            return
+        }
+
         setContentView(R.layout.activity_beach_detail)
+
 
         textRatingPromedio = findViewById(R.id.textRatingPromedio)
         textRatingPromedio.text = "Cargando..."

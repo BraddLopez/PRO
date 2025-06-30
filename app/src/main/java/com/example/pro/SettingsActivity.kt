@@ -41,20 +41,57 @@ class SettingsActivity : AppCompatActivity() {
         val switchDarkMode = findViewById<SwitchCompat>(R.id.switch_dark_mode)
 
         // Cargar estados guardados
-        switchNotifications.isChecked = prefs.getBoolean("notifications_enabled", true)
+        // 🔄 Sincronizar notificaciones desde Firestore si el usuario tiene datos
+        val user = FirebaseAuth.getInstance().currentUser
+        val db = FirebaseFirestore.getInstance()
+
+        if (user != null) {
+            db.collection("users").document(user.uid).get()
+                .addOnSuccessListener { doc ->
+                    val enabled = doc.getBoolean("notifications_enabled") ?: false // ❌ Desactivado por defecto si no existe
+                    prefs.edit().putBoolean("notifications_enabled", enabled).apply()
+                    switchNotifications.isChecked = enabled
+                }
+        }
+
         switchDarkMode.isChecked = prefs.getBoolean("dark_mode_enabled", false)
 
         // Listener para Notificaciones
-        switchNotifications.setOnCheckedChangeListener { _, isChecked ->
+        switchNotifications.setOnCheckedChangeListener { buttonView, isChecked ->
+            if (isChecked) {
+                val areEnabled = NotificationManagerCompat.from(this).areNotificationsEnabled()
+                if (!areEnabled) {
+                    Toast.makeText(this, "Debes activar las notificaciones en el sistema", Toast.LENGTH_LONG).show()
+
+                    // Volver a desactivar el switch visualmente
+                    buttonView.isChecked = false
+
+                    // Abrir configuración del sistema para activar notificaciones
+                    val intent = Intent().apply {
+                        action = Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                        putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+                    }
+                    startActivity(intent)
+
+                    return@setOnCheckedChangeListener
+                }
+            }
+
+            // Guardar el nuevo valor en SharedPreferences y Firestore
             prefs.edit().putBoolean("notifications_enabled", isChecked).apply()
 
-            if (isChecked) {
-                checkNotificationPermission() // 👈 Verifica el permiso del sistema
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            if (currentUser != null) {
+                FirebaseFirestore.getInstance().collection("users")
+                    .document(currentUser.uid)
+                    .update("notifications_enabled", isChecked)
             }
 
             val msg = if (isChecked) "Notificaciones activadas" else "Notificaciones desactivadas"
             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         }
+
+
 
 
 
