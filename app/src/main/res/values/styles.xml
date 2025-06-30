@@ -1,0 +1,15 @@
+<resources>
+    <!-- Estilo personalizado para RatingBar pequeño -->
+    <style name="CustomRatingBarSmall">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:numStars">5</item>
+        <item name="android:stepSize">0.5</item>
+        <item name="android:isIndicator">true</item>
+        <item name="android:rating">4</item>
+
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:layout_toEndOf">@id/commentDate</item>
+        <item name="android:layout_alignParentEnd">true</item>
+    </style>
+</resources>

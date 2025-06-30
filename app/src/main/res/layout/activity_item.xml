@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Nombre de la playa -->
+        <TextView
+            android:id="@+id/beachName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nombre de la playa"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#001F3F"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Texto del comentario -->
+        <TextView
+            android:id="@+id/activityText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Comentario aquí"
+            android:textSize="16sp"
+            android:textColor="#333333"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- RatingBar para la puntuación -->
+        <RatingBar
+            android:id="@+id/activityRating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:stepSize="0.5"
+            android:isIndicator="true"
+            android:rating="4"
+
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@id/commentDate"
+
+            style="?android:attr/ratingBarStyleSmall" />
+
+        <!-- Fecha del comentario -->
+        <TextView
+            android:id="@+id/activityDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fecha del comentario"
+            android:textSize="12sp"
+            android:textColor="#888888"
+            android:layout_marginTop="4dp"/>
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
+
