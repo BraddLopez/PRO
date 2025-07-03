@@ -62,6 +62,8 @@
                     android:layout_height="wrap_content"
                     android:text="Filtrar" />
 
+
+
             </LinearLayout>
 
 
@@ -69,15 +71,54 @@
             <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                 android:id="@+id/swipeRefreshLayout"
                 android:layout_width="match_parent"
-                android:layout_height="720dp">
+                android:layout_height="0dp"
+                android:layout_weight="1">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/beachRecyclerView"
+                <LinearLayout
+                    android:orientation="vertical"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scrollbars="vertical"
-                    android:padding="8dp" />
+                    android:layout_height="match_parent">
+
+                    <!-- TEXTO DE FILTROS APLICADOS -->
+                    <TextView
+                        android:id="@+id/textFiltrosAplicados"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Filtros aplicados: ..."
+                        android:textColor="@android:color/black"
+                        android:textStyle="italic"
+                        android:textSize="14sp"
+                        android:padding="8dp"
+                        android:visibility="gone"/>
+
+                    <!-- LISTA DE PLAYAS -->
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/beachRecyclerView"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scrollbars="vertical"
+                            android:padding="8dp"/>
+
+                        <TextView
+                            android:id="@+id/textNoResults"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="No se encontraron playas con esos filtros"
+                            android:textAlignment="center"
+                            android:gravity="center"
+                            android:visibility="gone"
+                            android:textSize="16sp"
+                            android:textColor="@android:color/darker_gray"
+                            android:layout_gravity="center"
+                            android:padding="16dp"/>
+                    </FrameLayout>
+                </LinearLayout>
             </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
 
         </LinearLayout>
 

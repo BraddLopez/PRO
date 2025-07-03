@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
@@ -30,10 +29,20 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Valoración mínima" />
+        android:text="Valoración exacta" />
 
     <Spinner
         android:id="@+id/spinnerRating"
+        android:layout_width="match_parent"
+        android:layout_height="48dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Orden por valoración" />
+
+    <Spinner
+        android:id="@+id/spinnerOrden"
         android:layout_width="match_parent"
         android:layout_height="48dp" />
 
@@ -42,6 +51,4 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Aplicar Filtros" />
-
 </LinearLayout>
-

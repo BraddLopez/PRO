@@ -1,5 +1,6 @@
 package com.example.pro
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -7,9 +8,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -46,7 +49,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var toggle: ActionBarDrawerToggle
     private lateinit var beachList: MutableList<Beach>
     private lateinit var btnFilter: Button
+    private lateinit var textNoResults: TextView
+    private lateinit var textFiltrosAplicados: TextView
 
+
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -72,8 +79,10 @@ class MainActivity : AppCompatActivity() {
         val swipeRefreshLayout = findViewById<SwipeRefreshLayout>(R.id.swipeRefreshLayout)
         swipeRefreshLayout.setOnRefreshListener {
             getBeachesFromFirestore()
+            textFiltrosAplicados.visibility = View.GONE  // Oculta texto al refrescar
             swipeRefreshLayout.isRefreshing = false
         }
+
 
         setSupportActionBar(toolbar)
         toggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav, R.string.close_nav)
@@ -86,6 +95,10 @@ class MainActivity : AppCompatActivity() {
         beachRecyclerView.adapter = beachAdapter
         getBeachesFromFirestore()
 
+        textNoResults = findViewById(R.id.textNoResults)
+        textFiltrosAplicados = findViewById(R.id.textFiltrosAplicados)
+
+
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val token = task.result
@@ -95,13 +108,10 @@ class MainActivity : AppCompatActivity() {
                 db.collection("users").document(userAuth.uid).set(userData, SetOptions.merge())
                     .addOnSuccessListener {
                         Log.d("FCM", "Token guardado correctamente")
-                        // 👇 NUEVO: mostrar token en pantalla
-                        //Toast.makeText(this, "TOKEN ACTUAL:\n$token", Toast.LENGTH_LONG).show()
                     }
                     .addOnFailureListener { Log.e("FCM", "Error al guardar token", it) }
             }
         }
-
 
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
@@ -137,10 +147,11 @@ class MainActivity : AppCompatActivity() {
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.inicio -> {
-                    moveTaskToBack(true)
-                    true
+                    moveTaskToBack(true); true
                 }
-                R.id.atras -> { showExitConfirmationDialog(); true }
+                R.id.atras -> {
+                    showExitConfirmationDialog(); true
+                }
                 else -> false
             }
         }
@@ -155,11 +166,7 @@ class MainActivity : AppCompatActivity() {
         })
 
         val regions = arrayOf("Todas", "Norte", "Centro", "Sur")
-
-        val tipoCategorias = listOf(
-            "Todos", "Familiar", "Tranquila", "Turística", "Natural", "Cultural",
-            "Pesca", "Surf", "Histórica", "Recreativa", "Urbana", "Fiestas"
-        )
+        val tipoCategorias = listOf("Todos", "Familiar", "Tranquila", "Turística", "Natural", "Cultural", "Pesca", "Surf", "Histórica", "Recreativa", "Urbana", "Fiestas")
 
         btnFilter.setOnClickListener {
             val dialogView = layoutInflater.inflate(R.layout.filter_bottom_sheet, null)
@@ -169,16 +176,19 @@ class MainActivity : AppCompatActivity() {
             val spinnerRegion = dialogView.findViewById<Spinner>(R.id.spinnerRegion)
             val spinnerTipo = dialogView.findViewById<Spinner>(R.id.spinnerTipo)
             val spinnerRating = dialogView.findViewById<Spinner>(R.id.spinnerRating)
+            val spinnerOrden = dialogView.findViewById<Spinner>(R.id.spinnerOrden)
 
             spinnerRegion.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, regions)
             spinnerTipo.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, tipoCategorias)
             spinnerRating.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, listOf("Todas", "1", "2", "3", "4", "5"))
+            spinnerOrden.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, resources.getStringArray(R.array.orden_valoracion_options))
 
             dialogView.findViewById<Button>(R.id.btnApplyFilters).setOnClickListener {
                 val selectedRegion = spinnerRegion.selectedItem.toString()
                 val selectedTipo = spinnerTipo.selectedItem.toString()
                 val selectedRating = spinnerRating.selectedItem.toString().toIntOrNull() ?: 0
-                applyCombinedFilters(selectedRegion, selectedTipo, selectedRating)
+                val selectedOrden = spinnerOrden.selectedItem.toString()
+                applyCombinedFilters(selectedRegion, selectedTipo, selectedRating, selectedOrden)
                 dialog.dismiss()
             }
 
@@ -189,37 +199,21 @@ class MainActivity : AppCompatActivity() {
             .getDynamicLink(intent)
             .addOnSuccessListener(this) { pendingDynamicLinkData ->
                 val deepLink: Uri? = pendingDynamicLinkData?.link
-
                 if (deepLink != null) {
                     val beachId = deepLink.getQueryParameter("beachId")
                     if (!beachId.isNullOrEmpty()) {
                         val detailIntent = Intent(this, BeachDetailActivity::class.java)
                         detailIntent.putExtra("id", beachId)
-
-                        val stackBuilder = androidx.core.app.TaskStackBuilder.create(this)
+                        val stackBuilder = TaskStackBuilder.create(this)
                         stackBuilder.addNextIntentWithParentStack(detailIntent)
                         stackBuilder.startActivities()
-
                     }
                 }
             }
-            .addOnFailureListener(this) { e ->
-                e.printStackTrace()
-            }
-
-
+            .addOnFailureListener(this) { e -> e.printStackTrace() }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1001 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Notificaciones habilitadas", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "Permiso de notificación denegado", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun applyCombinedFilters(region: String, tipo: String, minRating: Int) {
+    private fun applyCombinedFilters(region: String, tipo: String, ratingFiltro: Int, orden: String) {
         val db = FirebaseFirestore.getInstance()
         var query: Query = db.collection("playas")
         if (region != "Todas") query = query.whereEqualTo("region", region)
@@ -228,13 +222,13 @@ class MainActivity : AppCompatActivity() {
             val filtered = result.mapNotNull { doc ->
                 val rating = doc.getDouble("rating")?.toFloat() ?: 0f
                 val tipoPlaya = doc.getString("tipo") ?: ""
+                val regionPlaya = doc.getString("region") ?: ""
 
-                val tipoCoincide = when (tipo) {
-                    "Todos" -> true
-                    else -> tipoPlaya.contains(tipo, ignoreCase = true)
-                }
+                val tipoCoincide = tipo == "Todos" || tipoPlaya.contains(tipo, ignoreCase = true)
+                val regionCoincide = region == "Todas" || regionPlaya == region
+                val ratingCoincide = ratingFiltro == 0 || rating.toInt() == ratingFiltro
 
-                if (tipoCoincide && rating >= minRating) {
+                if (tipoCoincide && regionCoincide && ratingCoincide) {
                     Beach(
                         id = doc.id,
                         name = doc.getString("nombre") ?: "",
@@ -243,12 +237,46 @@ class MainActivity : AppCompatActivity() {
                         imageName = doc.getString("imagenNombre") ?: "",
                         type = tipoPlaya,
                         description = doc.getString("descripcion") ?: "",
-                        region = doc.getString("region") ?: "",
+                        region = regionPlaya,
                         commentCount = doc.getLong("conteo")?.toInt() ?: 0
                     )
                 } else null
             }
-            beachList.clear(); beachList.addAll(filtered); beachAdapter.notifyDataSetChanged()
+
+            val finalList = when (orden) {
+                "Más valorizadas" -> filtered.sortedByDescending { it.rating }
+                "Menos valorizadas" -> filtered.sortedBy { it.rating }
+                else -> filtered
+            }
+// Mostrar texto con filtros aplicados
+            val textoRegion = if (region != "Todas") "Región: $region" else ""
+            val textoTipo = if (tipo != "Todos") "Tipo: $tipo" else ""
+            val textoRating = if (ratingFiltro > 0) "Valoración: $ratingFiltro⭐" else ""
+            val textoOrden = if (orden != "Ninguno") "Orden: $orden" else ""
+
+            val filtrosVisibles = listOf(textoRegion, textoTipo, textoRating, textoOrden)
+                .filter { it.isNotEmpty() }
+                .joinToString(" | ")
+
+            if (filtrosVisibles.isNotEmpty()) {
+                textFiltrosAplicados.text = "Filtros aplicados: $filtrosVisibles"
+                textFiltrosAplicados.visibility = View.VISIBLE
+            } else {
+                textFiltrosAplicados.text = ""
+                textFiltrosAplicados.visibility = View.GONE
+            }
+
+            beachList.clear()
+            beachList.addAll(finalList)
+            beachAdapter.notifyDataSetChanged()
+
+
+            if (finalList.isEmpty()) {
+                textNoResults.visibility = View.VISIBLE
+            } else {
+                textNoResults.visibility = View.GONE
+            }
+
         }.addOnFailureListener {
             Log.w("Firestore", "Error al aplicar filtros", it)
         }
@@ -278,31 +306,8 @@ class MainActivity : AppCompatActivity() {
                     beachList.add(beach)
                 }
                 beachAdapter.notifyDataSetChanged()
-            }
-    }
+                textNoResults.visibility = if (beachList.isEmpty()) View.VISIBLE else View.GONE
 
-    private fun filterBeachesByRegion(region: String) {
-        val db = FirebaseFirestore.getInstance()
-        db.collection("playas").whereEqualTo("region", region).get()
-            .addOnSuccessListener { result ->
-                beachList.clear()
-                for (doc in result) {
-                    val beach = Beach(
-                        id = doc.id,
-                        name = doc.getString("nombre") ?: "",
-                        location = doc.getString("ubicacion") ?: "",
-                        rating = doc.getDouble("rating")?.toFloat() ?: 0f,
-                        imageName = doc.getString("imagenNombre") ?: "",
-                        type = doc.getString("tipo") ?: "",
-                        description = doc.getString("descripcion") ?: "",
-                        region = doc.getString("region") ?: "",
-                        commentCount = doc.getLong("conteo")?.toInt() ?: 0
-                    )
-                    beachList.add(beach)
-                }
-                beachAdapter.notifyDataSetChanged()
-            }.addOnFailureListener {
-                Log.w("Firestore", "Error al obtener playas por región", it)
             }
     }
 
@@ -339,6 +344,7 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 }
+
 
 
 

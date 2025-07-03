@@ -44,36 +44,27 @@ class ActividadRecuperar : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val user = auth.currentUser
-
-            if (user != null && user.email == correo) {
-                if (user.isEmailVerified) {
-                    auth.sendPasswordResetEmail(correo)
-                        .addOnCompleteListener { resetTask ->
-                            if (resetTask.isSuccessful) {
-                                Toast.makeText(
-                                    this,
-                                    "Correo de restablecimiento enviado. Revisa tu bandeja de entrada.",
-                                    Toast.LENGTH_LONG
-                                ).show()
-                                startActivity(Intent(this, IniciarSesion::class.java))
-                                finish()
-                            } else {
-                                val exceptionMessage = resetTask.exception?.message ?: "Error desconocido"
-                                Toast.makeText(
-                                    this,
-                                    "Error al enviar el correo: $exceptionMessage",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-                } else {
-                    Toast.makeText(this, "Por favor, verifica tu correo electrónico antes de restablecer la contraseña.", Toast.LENGTH_SHORT).show()
+            auth.sendPasswordResetEmail(correo)
+                .addOnCompleteListener { resetTask ->
+                    if (resetTask.isSuccessful) {
+                        Toast.makeText(
+                            this,
+                            "Correo de restablecimiento enviado. Revisa tu bandeja de entrada.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        startActivity(Intent(this, IniciarSesion::class.java))
+                        finish()
+                    } else {
+                        val exceptionMessage = resetTask.exception?.message ?: "Error desconocido"
+                        Toast.makeText(
+                            this,
+                            "Error al enviar el correo: $exceptionMessage",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
-            } else {
-                Toast.makeText(this, "Este correo no está registrado o no está autenticado.", Toast.LENGTH_SHORT).show()
-            }
         }
+
 
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
         bottomNavigationView.setOnItemSelectedListener { item ->
