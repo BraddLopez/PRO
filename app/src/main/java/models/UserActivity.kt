@@ -1,4 +1,4 @@
-package com.example.pro
+package models
 
 data class UserActivity(
     val beachName: String,  // Nombre de la playa
@@ -6,4 +6,3 @@ data class UserActivity(
     val rating: Float,      // La puntuación dada por el usuario (en formato float)
     val date: String        // La fecha en que se hizo el comentario
 )
-

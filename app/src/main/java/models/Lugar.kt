@@ -5,5 +5,7 @@ data class Lugar(
     val direccion: String,
     val descripcion: String,
     val imagenUrl: String? = null,
-    val distancia: Double = 0.0
+    val distancia: Double = 0.0,
+    val latitud: Double, // <-- AGREGAR
+    val longitud: Double // <-- AGREGAR
 )

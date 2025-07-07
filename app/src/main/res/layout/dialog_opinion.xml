@@ -4,26 +4,30 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="24dp"
-    android:background="@android:color/white">
+    android:background="@color/soft_sky">
 
+    <!-- TÍTULO -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Tu valoración"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:textColor="#333333"
+        android:textColor="?android:textColorPrimary"
         android:layout_gravity="center_horizontal"
         android:layout_marginBottom="8dp" />
 
+    <!-- RATINGBAR -->
     <RatingBar
         android:id="@+id/ratingBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:numStars="5"
         android:stepSize="1.0"
-        android:layout_gravity="center_horizontal" />
+        android:layout_gravity="center_horizontal"
+        android:progressTint="@android:color/holo_orange_light" />
 
+    <!-- CAMPO DE COMENTARIO -->
     <EditText
         android:id="@+id/commentInput"
         android:layout_width="match_parent"
@@ -33,23 +37,24 @@
         android:background="@drawable/bg_edittext"
         android:padding="12dp"
         android:textColor="#000000"
+        android:textColorHint="?android:textColorHint"
         android:textSize="14sp"
         android:layout_marginTop="16dp"
         android:gravity="top|start" />
 
-    <!-- Botón para enviar nuevo comentario -->
+    <!-- BOTÓN ENVIAR -->
     <Button
         android:id="@+id/submitCommentBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Enviar comentario"
         android:layout_marginTop="20dp"
-        android:backgroundTint="@color/lavender"
+        android:backgroundTint="?attr/colorPrimary"
         android:textColor="@android:color/white"
         android:padding="12dp"
         android:textStyle="bold" />
 
-    <!-- Botón para guardar edición -->
+    <!-- BOTÓN GUARDAR -->
     <Button
         android:id="@+id/btnGuardar"
         android:layout_width="match_parent"
@@ -62,7 +67,7 @@
         android:textStyle="bold"
         android:visibility="gone" />
 
-    <!-- Botón para cancelar edición -->
+    <!-- BOTÓN CANCELAR -->
     <Button
         android:id="@+id/btnCancelar"
         android:layout_width="match_parent"
@@ -74,5 +79,4 @@
         android:padding="12dp"
         android:textStyle="bold"
         android:visibility="gone" />
-
 </LinearLayout>

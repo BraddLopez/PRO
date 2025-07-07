@@ -31,10 +31,31 @@ class QrScanActivity : AppCompatActivity() {
 
         barcodeView = findViewById(R.id.barcodeScannerView)
 
+        val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+        val currentUser = auth.currentUser
+
+        if (currentUser == null) {
+            auth.signInAnonymously()
+                .addOnSuccessListener {
+                    iniciarEscaneoConPermiso()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Error al iniciar sesión anónima", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+        } else {
+            iniciarEscaneoConPermiso()
+        }
+    }
+
+    private fun iniciarEscaneoConPermiso() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
             != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                arrayOf(Manifest.permission.CAMERA), CAMERA_PERMISSION_CODE)
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.CAMERA),
+                CAMERA_PERMISSION_CODE
+            )
         } else {
             startCamera()
         }
@@ -51,22 +72,14 @@ class QrScanActivity : AppCompatActivity() {
                     Firebase.dynamicLinks.getDynamicLink(Uri.parse(scannedText))
                         .addOnSuccessListener { pendingDynamicLinkData ->
                             val deepLink: Uri? = pendingDynamicLinkData?.link
+                            val beachId = deepLink?.getQueryParameter("beachId")
 
-                            if (deepLink != null) {
-                                val beachId = deepLink.getQueryParameter("beachId")
-
-                                if (!beachId.isNullOrEmpty()) {
-                                    val intent = Intent(this@QrScanActivity, BeachDetailActivity::class.java)
-                                    intent.putExtra("id", beachId)
-                                    startActivity(intent)
-                                } else {
-                                    Toast.makeText(this@QrScanActivity, "QR inválido o sin beachId", Toast.LENGTH_LONG).show()
-                                }
+                            if (!beachId.isNullOrEmpty()) {
+                                abrirDetallePlaya(beachId)
                             } else {
-                                Toast.makeText(this@QrScanActivity, "QR inválido o sin link", Toast.LENGTH_LONG).show()
+                                Toast.makeText(this@QrScanActivity, "QR inválido o sin beachId", Toast.LENGTH_LONG).show()
+                                finish()
                             }
-
-                            finish()
                         }
                         .addOnFailureListener {
                             Toast.makeText(this@QrScanActivity, "Error al resolver QR", Toast.LENGTH_SHORT).show()
@@ -81,19 +94,42 @@ class QrScanActivity : AppCompatActivity() {
         barcodeView.resume()
     }
 
+    private fun abrirDetallePlaya(beachId: String) {
+        val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+
+        if (auth.currentUser == null) {
+            // Espera a que Firebase complete la sesión anónima
+            auth.signInAnonymously()
+                .addOnSuccessListener {
+                    lanzarDetalle(beachId)
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Error al iniciar sesión anónima", Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+        } else {
+            lanzarDetalle(beachId)
+        }
+    }
+
+    private fun lanzarDetalle(beachId: String) {
+        val intent = Intent(this@QrScanActivity, BeachDetailActivity::class.java)
+        intent.putExtra("id", beachId)
+        intent.putExtra("fromQR", true)
+        startActivity(intent)
+        finish()
+    }
+
+
 
     override fun onResume() {
         super.onResume()
-        if (::barcodeView.isInitialized) {
-            barcodeView.resume()
-        }
+        if (::barcodeView.isInitialized) barcodeView.resume()
     }
 
     override fun onPause() {
         super.onPause()
-        if (::barcodeView.isInitialized) {
-            barcodeView.pause()
-        }
+        if (::barcodeView.isInitialized) barcodeView.pause()
     }
 
     override fun onRequestPermissionsResult(

@@ -22,6 +22,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import models.Beach
+import models.UserActivity
 
 class ProfileActivity : AppCompatActivity() {
 

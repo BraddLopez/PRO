@@ -38,20 +38,15 @@ class LoginWelcomeActivity : AppCompatActivity() {
         registraUsuario = findViewById(R.id.botonRegistrar)
         val botonIniciar = findViewById<Button>(R.id.botonIniciar)
         val continuarInvitado = findViewById<TextView>(R.id.Continuar)
-
-
         continuarInvitado?.setOnClickListener {
             logOutAndContinueAsGuest()
         }
-
-
         registraUsuario.setOnClickListener{
             startActivity(Intent(this, Registrar::class.java))
         }
         botonIniciar.setOnClickListener{
             startActivity(Intent(this, IniciarSesion::class.java))
         }
-
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottomNavigationView)
         bottomNavigationView.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -64,22 +59,46 @@ class LoginWelcomeActivity : AppCompatActivity() {
                     onBackPressed()
                     true
                 }
-
                 else -> false
             }
         }
-
-
-
     }
     private fun logOutAndContinueAsGuest() {
-        // Cerrar la sesión de Firebase
-        FirebaseAuth.getInstance().signOut()
+        val auth = FirebaseAuth.getInstance()
 
-        // Navegar a la pantalla de playas como invitado
-        val intent = Intent(this, MainActivity::class.java)  // Aquí vas a la actividad de las playas
-        startActivity(intent)
-        finish()  // Finalizamos la actividad actual
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            // Si no hay sesión, inicia como anónimo
+            auth.signInAnonymously()
+                .addOnSuccessListener {
+                    irComoInvitado()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "No se pudo continuar como invitado", Toast.LENGTH_SHORT).show()
+                }
+        } else if (!currentUser.isAnonymous) {
+            // Si hay sesión y NO es anónimo, cerrar sesión e iniciar como invitado
+            auth.signOut()
+            auth.signInAnonymously()
+                .addOnSuccessListener {
+                    irComoInvitado()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "No se pudo continuar como invitado", Toast.LENGTH_SHORT).show()
+                }
+        } else {
+            // Ya es anónimo, solo continuar
+            irComoInvitado()
+        }
     }
+
+    private fun irComoInvitado() {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("anonimo", true)
+        MainActivity.isAnonimo = true // sincroniza flag global si usas
+        startActivity(intent)
+        finish()
+    }
+
 
 }

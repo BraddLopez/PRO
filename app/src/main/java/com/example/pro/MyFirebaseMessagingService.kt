@@ -35,9 +35,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val commentId = remoteMessage.data["commentId"]
 
         val beachDetailIntent = Intent(this, BeachDetailActivity::class.java).apply {
-            putExtra("id", beachId)
+            putExtra("id", beachId) // ✅ DEBE ser "id"
             putExtra("commentId", commentId)
         }
+
 
         val pendingIntent = TaskStackBuilder.create(this).run {
             addNextIntentWithParentStack(beachDetailIntent) // ✅ incluye MainActivity como padre

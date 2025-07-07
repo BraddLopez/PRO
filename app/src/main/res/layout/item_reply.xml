@@ -5,11 +5,10 @@
     android:padding="8dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/background_light"
     android:layout_marginTop="6dp"
     android:layout_marginBottom="4dp"
     android:layout_marginStart="12dp"
-    android:backgroundTint="@color/white"
+    android:background="@color/soft_sky"
     android:elevation="2dp">
 
     <LinearLayout
@@ -31,16 +30,16 @@
                 android:layout_height="wrap_content"
                 android:text="Usuario"
                 android:textStyle="bold"
-                android:textSize="13sp"
-                android:textColor="#000000" />
+                android:textSize="15sp"
+                android:textColor="?android:textColorPrimary" />
 
             <TextView
                 android:id="@+id/replyDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Fecha"
-                android:textSize="11sp"
-                android:textColor="@android:color/darker_gray" />
+                android:textSize="12sp"
+                android:textColor="?android:textColorSecondary" />
         </LinearLayout>
 
         <ImageView
@@ -50,7 +49,7 @@
             android:padding="8dp"
             android:src="@drawable/ic_more_vert_24"
             android:contentDescription="Más opciones"
-            app:tint="@color/purple_700" />
+            app:tint="?attr/colorPrimary" />
     </LinearLayout>
 
     <TextView
@@ -58,6 +57,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Respuesta del usuario"
-        android:textSize="14sp"
-        android:textColor="#000000" />
+        android:textSize="15sp"
+        android:textColor="?android:textColorPrimary" />
 </LinearLayout>

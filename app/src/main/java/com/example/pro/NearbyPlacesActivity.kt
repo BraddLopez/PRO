@@ -34,6 +34,10 @@ class NearbyPlacesActivity : AppCompatActivity(), OnMapReadyCallback {
     private var longitude: Double = -77.0428
     private var placeType: String = "tourist_attraction" // Por defecto
     private lateinit var lugaresRecyclerView: RecyclerView
+    private lateinit var lugarAdapter: LugarAdapter
+    private val marcadorPorLugar = mutableMapOf<Lugar, com.google.android.gms.maps.model.Marker>()
+    private val lugarPorMarker = mutableMapOf<com.google.android.gms.maps.model.Marker, Lugar>()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,6 +84,15 @@ class NearbyPlacesActivity : AppCompatActivity(), OnMapReadyCallback {
         googleMap.addMarker(MarkerOptions().position(playaLatLng).title("Playa"))
 
         buscarLugaresConPlacesAPI()
+
+        googleMap.setOnMarkerClickListener { marker ->
+            val lugarSeleccionado = lugarPorMarker[marker]
+            if (lugarSeleccionado != null) {
+                resaltarLugarEnRecyclerView(lugarSeleccionado)
+            }
+            false
+        }
+
     }
 
     private fun buscarLugaresConPlacesAPI() {
@@ -119,22 +132,25 @@ class NearbyPlacesActivity : AppCompatActivity(), OnMapReadyCallback {
 
                     // Marcadores en el mapa
                     for (lugar in listaGenerada) {
-                        val lat = results.getJSONObject(listaGenerada.indexOf(lugar))
-                            .getJSONObject("geometry").getJSONObject("location").getDouble("lat")
-                        val lng = results.getJSONObject(listaGenerada.indexOf(lugar))
-                            .getJSONObject("geometry").getJSONObject("location").getDouble("lng")
-
-                        googleMap.addMarker(
+                        val marker = googleMap.addMarker(
                             MarkerOptions()
-                                .position(LatLng(lat, lng))
+                                .position(LatLng(lugar.latitud, lugar.longitud))
                                 .title(lugar.nombre)
                                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))
                         )
+
+                        if (marker != null) {
+                            marcadorPorLugar[lugar] = marker
+                            lugarPorMarker[marker] = lugar
+                        }
                     }
+
 
                     lugaresRecyclerView = findViewById(R.id.lugaresRecyclerView)
                     lugaresRecyclerView.layoutManager = LinearLayoutManager(this@NearbyPlacesActivity)
-                    lugaresRecyclerView.adapter = LugarAdapter(listaGenerada)
+                    lugarAdapter = LugarAdapter(listaGenerada)
+                    lugaresRecyclerView.adapter = lugarAdapter
+
                 }
 
             }
@@ -165,7 +181,7 @@ class NearbyPlacesActivity : AppCompatActivity(), OnMapReadyCallback {
             // ✅ Calcular distancia desde la playa
             val distancia = calcularDistanciaEnMetros(latitude, longitude, lat, lng)
 
-            val lugar = Lugar(nombre, direccion, descripcion, imagen, distancia)
+            val lugar = Lugar(nombre, direccion, descripcion, imagen, distancia, lat, lng)
             lugares.add(lugar)
         }
 
@@ -186,6 +202,18 @@ class NearbyPlacesActivity : AppCompatActivity(), OnMapReadyCallback {
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         return radioTierra * c
     }
+
+    private fun resaltarLugarEnRecyclerView(lugar: Lugar) {
+        if (!::lugarAdapter.isInitialized) return  // ✅ evita crash si no está listo
+        lugarAdapter.seleccionarLugar(lugar)
+
+        // ✅ Mueve el RecyclerView al ítem
+        val posicion = lugarAdapter.lugares.indexOf(lugar)
+        if (posicion != -1) {
+            lugaresRecyclerView.scrollToPosition(posicion)
+        }
+    }
+
 
 }
 

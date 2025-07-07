@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="tituloColor">#0D47A1</color> <!-- Azul profundo -->
+    <color name="soft_sky">#FAFDFF</color> <!-- Azul muy suave -->
+    <color name="card_background">#F2F2F2</color> <!-- gris elegante -->
+    <color name="RecomeColor">#1C1C1E</color> <!-- Gris oscuro elegante -->
+    <color name="heart_red">#E53935</color>   <!-- Color final del corazón -->
+    <color name="heart_green">#4CAF50</color> <!-- Color temporal al dar like -->
+    <color name="heart_gray">#9E9E9E</color>  <!-- Color cuando no hay like -->
+
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>

@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/commentCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    android:elevation="4dp">
+    app:cardElevation="4dp"
+    app:cardCornerRadius="12dp"
+    app:cardBackgroundColor="@color/card_background">
 
     <LinearLayout
         android:id="@+id/commentContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:background="?android:attr/selectableItemBackground">
+        android:padding="16dp">
 
-        <!-- Usuario, Fecha, Imagen y Opciones -->
+        <!-- Fila superior: Imagen, nombre, fecha, like, contador, más opciones -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -24,6 +25,7 @@
             android:gravity="center_vertical"
             android:paddingBottom="8dp">
 
+            <!-- Imagen de usuario -->
             <ImageView
                 android:id="@+id/userImage"
                 android:layout_width="40dp"
@@ -32,6 +34,7 @@
                 android:src="@drawable/uc_user"
                 android:scaleType="centerCrop" />
 
+            <!-- Nombre y fecha -->
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -43,8 +46,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Nombre del usuario"
-                    android:textSize="14sp"
+                    android:textSize="15sp"
                     android:textStyle="bold"
+                    android:textColor="?android:textColorPrimary"
                     android:layout_marginBottom="4dp" />
 
                 <TextView
@@ -53,9 +57,31 @@
                     android:layout_height="wrap_content"
                     android:text="Hace 2 horas"
                     android:textSize="12sp"
-                    android:textColor="@android:color/darker_gray"/>
+                    android:textColor="?android:textColorSecondary"/>
             </LinearLayout>
 
+            <!-- Icono de corazón -->
+            <ImageView
+                android:id="@+id/heartIcon"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/ic_heart_outline"
+                android:contentDescription="Reaccionar"
+                android:padding="4dp"
+                app:tint="?attr/colorPrimary" />
+
+            <!-- Contador de likes -->
+            <TextView
+                android:id="@+id/likesCountText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="14sp"
+                android:layout_marginEnd="8dp" />
+
+            <!-- Menú de opciones -->
             <ImageView
                 android:id="@+id/moreOptions"
                 android:layout_width="44dp"
@@ -63,7 +89,7 @@
                 android:src="@drawable/ic_more_vert_24"
                 android:contentDescription="Más opciones"
                 android:padding="4dp"
-                app:tint="@color/purple_700" />
+                app:tint="?attr/colorPrimary" />
         </LinearLayout>
 
         <!-- Si es respuesta -->
@@ -74,7 +100,7 @@
             android:text="↪ Respuesta a..."
             android:textSize="12sp"
             android:textStyle="italic"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="?android:textColorSecondary"
             android:layout_marginBottom="4dp"
             android:visibility="gone"/>
 
@@ -84,8 +110,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Texto del comentario principal o respuesta"
-            android:textSize="14sp"
-            android:textColor="#000000"
+            android:textSize="15sp"
+            android:textColor="?android:textColorPrimary"
             android:layout_marginBottom="8dp" />
 
         <!-- Botón para Responder -->
@@ -97,22 +123,21 @@
             android:layout_marginTop="4dp"
             android:visibility="gone"
             android:textSize="12sp"
-            android:backgroundTint="@color/lavender"
-            android:textColor="@android:color/black"
+            android:textColor="?android:textColorPrimary"
+            android:background="?attr/selectableItemBackground"
             android:padding="8dp" />
 
+        <!-- Mostrar/Ocultar respuestas -->
         <TextView
             android:id="@+id/tvToggleReplies"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Mostrar respuestas"
-            android:textColor="@android:color/black"
+            android:textColor="?android:textColorPrimary"
             android:visibility="gone"
             android:padding="4dp" />
 
-
-
-        <!-- 🔽 NUEVO: Contenedor de respuestas -->
+        <!-- Contenedor de respuestas -->
         <LinearLayout
             android:id="@+id/repliesContainer"
             android:layout_width="match_parent"
@@ -120,9 +145,6 @@
             android:orientation="vertical"
             android:paddingTop="8dp"
             android:paddingStart="24dp"
-            android:visibility="gone">
-            <!-- Las respuestas se agregan dinámicamente desde el adapter -->
-        </LinearLayout>
-
+            android:visibility="gone" />
     </LinearLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

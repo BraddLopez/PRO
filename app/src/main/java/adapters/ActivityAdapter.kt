@@ -7,7 +7,7 @@ import android.widget.RatingBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.pro.R
-import com.example.pro.UserActivity
+import models.UserActivity
 
 class ActivityAdapter(private val activities: List<UserActivity>) : RecyclerView.Adapter<ActivityAdapter.ActivityViewHolder>() {
 

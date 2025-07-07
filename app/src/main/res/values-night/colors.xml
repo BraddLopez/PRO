@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="tituloColor">#82B1FF</color> <!-- azul claro en modo oscuro -->
+    <color name="soft_sky">#1A1A1A</color> <!-- Fondo oscuro suave (gris casi negro) -->
+    <color name="card_background">#1E1E1E</color> <!-- Gris oscuro elegante -->
+    <color name="RecomeColor">#FFFFFF</color> <!-- Blanco para destacar -->
+
+
+
+
+</resources>

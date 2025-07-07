@@ -78,7 +78,7 @@ dependencies {
     implementation ("com.google.firebase:firebase-dynamic-links-ktx")
 
     implementation ("com.google.android.libraries.places:places:3.3.0")
-
+    implementation ("com.google.firebase:firebase-functions-ktx:20.4.0")
 
     // AndroidX y otros
     implementation(libs.androidx.core.ktx)

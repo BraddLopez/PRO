@@ -17,7 +17,8 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@color/soft_sky">
 
         <LinearLayout
             android:id="@+id/profileLayout"
@@ -34,7 +35,8 @@
                 app:cardCornerRadius="65dp"
                 app:cardElevation="8dp"
                 android:layout_marginTop="24dp"
-                android:layout_marginBottom="12dp">
+                android:layout_marginBottom="12dp"
+                android:backgroundTint="@android:color/white">
 
                 <ImageView
                     android:id="@+id/profileImage"
@@ -51,7 +53,7 @@
                 android:layout_height="wrap_content"
                 android:text="Nombre del usuario"
                 android:textSize="20sp"
-                android:textColor="#212121"
+                android:textColor="@color/tituloColor"
                 android:textStyle="bold"
                 android:layout_marginTop="8dp"
                 android:fontFamily="sans-serif-medium" />
@@ -63,7 +65,7 @@
                 android:layout_height="wrap_content"
                 android:text="correo@ejemplo.com"
                 android:textSize="16sp"
-                android:textColor="#607D8B"
+                android:textColor="?android:textColorPrimary"
                 android:layout_marginTop="4dp" />
 
             <!-- Botón editar perfil -->
@@ -91,7 +93,7 @@
                 android:text="Mi actividad"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="#001F3F"
+                android:textColor="@color/tituloColor"
                 android:layout_marginTop="20dp"
                 android:layout_marginBottom="8dp"
                 android:layout_width="wrap_content"
@@ -115,6 +117,7 @@
                 android:layout_height="wrap_content"
                 android:scrollbars="vertical"
                 android:nestedScrollingEnabled="false"
+                android:textColor="?android:textColorPrimary"
                 android:layout_marginBottom="24dp" />
 
             <!-- Recomendaciones -->
@@ -122,7 +125,7 @@
                 android:text="Recomendaciones para ti"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="#001F3F"
+                android:textColor="@color/tituloColor"
                 android:layout_marginBottom="8dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
@@ -144,7 +147,7 @@
         android:id="@+id/bottomNavigationView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="@color/soft_sky"
         app:menu="@menu/bottom_menu"
         app:labelVisibilityMode="labeled"
         app:layout_constraintBottom_toBottomOf="parent"

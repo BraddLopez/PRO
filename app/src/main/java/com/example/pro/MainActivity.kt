@@ -53,18 +53,39 @@ class MainActivity : AppCompatActivity() {
     private lateinit var textFiltrosAplicados: TextView
 
 
+    companion object {
+        var isAnonimo: Boolean = false
+    }
+
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         val user = FirebaseAuth.getInstance().currentUser
-        if (user == null || !user.isEmailVerified) {
+
+        if (user == null) {
+            // No hay sesión
             val intent = Intent(this, LoginWelcomeActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
             return
         }
+
+        val esAnonimo = user.isAnonymous
+        val verificado = user.isEmailVerified
+
+        if (!verificado && !esAnonimo) {
+            // Si no es anónimo y no está verificado => login
+            val intent = Intent(this, LoginWelcomeActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
+            finish()
+            return
+        }
+
+// ✅ Esta es la fuente de verdad
+        isAnonimo = esAnonimo
 
         setContentView(R.layout.activity_main)
 
@@ -103,15 +124,20 @@ class MainActivity : AppCompatActivity() {
             if (task.isSuccessful) {
                 val token = task.result
                 val userAuth = FirebaseAuth.getInstance().currentUser ?: return@addOnCompleteListener
-                val db = FirebaseFirestore.getInstance()
-                val userData = mapOf("token" to token)
-                db.collection("users").document(userAuth.uid).set(userData, SetOptions.merge())
-                    .addOnSuccessListener {
-                        Log.d("FCM", "Token guardado correctamente")
-                    }
-                    .addOnFailureListener { Log.e("FCM", "Error al guardar token", it) }
+
+                // 👉 Verifica que no sea anónimo antes de guardar el token
+                if (!userAuth.isAnonymous) {
+                    val db = FirebaseFirestore.getInstance()
+                    val userData = mapOf("token" to token)
+                    db.collection("users").document(userAuth.uid).set(userData, SetOptions.merge())
+                        .addOnSuccessListener {
+                            Log.d("FCM", "Token guardado correctamente")
+                        }
+                        .addOnFailureListener { Log.e("FCM", "Error al guardar token", it) }
+                }
             }
         }
+
 
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
@@ -204,6 +230,7 @@ class MainActivity : AppCompatActivity() {
                     if (!beachId.isNullOrEmpty()) {
                         val detailIntent = Intent(this, BeachDetailActivity::class.java)
                         detailIntent.putExtra("id", beachId)
+                        detailIntent.putExtra("fromQR", true)  // <== Agrega esta línea
                         val stackBuilder = TaskStackBuilder.create(this)
                         stackBuilder.addNextIntentWithParentStack(detailIntent)
                         stackBuilder.startActivities()
@@ -211,6 +238,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             .addOnFailureListener(this) { e -> e.printStackTrace() }
+
     }
 
     private fun applyCombinedFilters(region: String, tipo: String, ratingFiltro: Int, orden: String) {
@@ -344,9 +372,3 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 }
-
-
-
-
-
-

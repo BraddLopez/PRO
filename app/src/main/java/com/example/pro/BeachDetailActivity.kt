@@ -89,17 +89,34 @@ class BeachDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
 
         val user = FirebaseAuth.getInstance().currentUser
+        val vieneDeQR = intent.getBooleanExtra("fromQR", false)
+        Log.d("DEBUG", "¿Abierto desde QR?: $vieneDeQR")
+
         if (user == null) {
-            // Redirigir al login si no hay sesión activa
-            val intent = Intent(this, LoginWelcomeActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            finish()
-            return
+            if (vieneDeQR) {
+                // Si viene del QR, iniciar sesión anónima automáticamente
+                FirebaseAuth.getInstance().signInAnonymously()
+                    .addOnSuccessListener {
+                        MainActivity.isAnonimo = true
+                        recreate() // Reinicia la actividad ya como invitado
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Error al iniciar como invitado", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                return // 👈 evita que siga hasta que se complete
+            } else {
+                val intent = Intent(this, LoginWelcomeActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+                return
+            }
+        } else {
+            MainActivity.isAnonimo = user.isAnonymous
         }
 
         setContentView(R.layout.activity_beach_detail)
-
 
         textRatingPromedio = findViewById(R.id.textRatingPromedio)
         textRatingPromedio.text = "Cargando..."
@@ -151,10 +168,25 @@ class BeachDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         // Rating
         val btnDarOpinion = findViewById<Button>(R.id.btnDarOpinion)
         btnDarOpinion.setOnClickListener {
-            mostrarDialogoOpinion(beachId)
+            if (MainActivity.isAnonimo) {
+                AlertDialog.Builder(this)
+                    .setTitle("🔒 Inicia sesión")
+                    .setMessage("Necesitas iniciar sesión para valorar esta playa.")
+                    .setPositiveButton("Iniciar sesión") { dialog, _ ->
+                        startActivity(Intent(this, LoginWelcomeActivity::class.java))
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton("Cancelar") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
+            } else {
+                mostrarDialogoOpinion(beachId)
+            }
         }
-        submitCommentBtn = findViewById(R.id.submitCommentBtn)
-        commentInput = findViewById(R.id.commentInput)
+
+
+
 
         mapButton.setOnClickListener {
             abrirUbicacion(beach.name)
@@ -200,7 +232,8 @@ class BeachDetailActivity : AppCompatActivity(), OnMapReadyCallback {
             commentList,
             onEditClick = { comment -> mostrarDialogoEditar(comment) },
             onDeleteClick = { comment -> eliminarComentario(comment) },
-            onReplyClick = { comment -> showReplyDialog(comment) }
+            onReplyClick = { comment -> showReplyDialog(comment) },
+            beachId
         )
         commentRecyclerView = findViewById(R.id.commentsRecyclerView)
         commentRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -372,31 +405,44 @@ class BeachDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         val commentInput = dialogView.findViewById<EditText>(R.id.commentInput)
         val ratingBar = dialogView.findViewById<RatingBar>(R.id.ratingBar)
         val submitBtn = dialogView.findViewById<Button>(R.id.submitCommentBtn)
+
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .setCancelable(true)
-            .setNegativeButton("Cancelar") { dialogInterface, _ -> dialogInterface.dismiss() } // ✅ Botón para cancelar
+            .setNegativeButton("Cancelar") { dialogInterface, _ -> dialogInterface.dismiss() }
             .create()
+
         val user = FirebaseAuth.getInstance().currentUser
-        if (user != null) {
-            val db = FirebaseFirestore.getInstance()
-            db.collection("playas").document(beachId)
-                .collection("comments")
-                .whereEqualTo("userId", user.uid)
-                .whereGreaterThan("rating", 0)
-                .limit(1)
-                .get()
-                .addOnSuccessListener { result ->
-                    if (!result.isEmpty) {
-                        // Ya calificó, desactivar rating y botón de calificación
-                        ratingBar.isEnabled = false
-                        ratingBar.alpha = 0.5f
-                        ratingBar.rating = result.documents.first().getDouble("rating")?.toFloat() ?: 0f
-                        // Mostrar aviso
-                        Toast.makeText(this, "Ya calificaste. Puedes seguir comentando sin puntuar.", Toast.LENGTH_SHORT).show()
-                    }
+
+        if (user == null || user.isAnonymous || MainActivity.isAnonimo) {
+            // Bloquear el diálogo por completo y pedir login
+            dialog.dismiss()
+            AlertDialog.Builder(this)
+                .setTitle("🔒 Inicia sesión")
+                .setMessage("Debes iniciar sesión para comentar y valorar.")
+                .setPositiveButton("Iniciar sesión") { _, _ ->
+                    startActivity(Intent(this, LoginWelcomeActivity::class.java))
                 }
+                .setNegativeButton("Cancelar", null)
+                .show()
+            return
         }
+        // Si el usuario no es anónimo, permitir la interacción
+        val db = FirebaseFirestore.getInstance()
+        db.collection("playas").document(beachId)
+            .collection("comments")
+            .whereEqualTo("userId", user.uid)
+            .whereGreaterThan("rating", 0)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { result ->
+                if (!result.isEmpty) {
+                    ratingBar.isEnabled = false
+                    ratingBar.alpha = 0.5f
+                    ratingBar.rating = result.documents.first().getDouble("rating")?.toFloat() ?: 0f
+                    Toast.makeText(this, "Ya calificaste. Puedes seguir comentando sin puntuar.", Toast.LENGTH_SHORT).show()
+                }
+            }
         submitBtn.setOnClickListener {
             val commentText = commentInput.text.toString().trim()
             val rating = if (ratingBar.isEnabled) ratingBar.rating else 0f
@@ -410,6 +456,7 @@ class BeachDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         }
         dialog.show()
     }
+
     private fun showReplyDialog(parentComment: Comment) {
         val input = EditText(this)
         input.hint = "Escribe tu respuesta..."
@@ -603,13 +650,16 @@ class BeachDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                 commentAdapter.setRepliesMap(repliesMap)
                 commentAdapter.notifyDataSetChanged()
                 // Destacar comentario si aplica
-                if (commentIdDestacado != null) {
+                if (!commentIdDestacado.isNullOrEmpty()) {
+                    commentAdapter.setComentarioDestacado(commentIdDestacado)
+
+                    // Si está en la lista principal, hacer scroll
                     val index = commentList.indexOfFirst { it.id == commentIdDestacado }
                     if (index != -1) {
                         commentRecyclerView.scrollToPosition(index)
-                        commentAdapter.setComentarioDestacado(commentIdDestacado)
                     }
                 }
+
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Error al cargar comentarios", Toast.LENGTH_SHORT).show()
@@ -848,7 +898,9 @@ class BeachDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     }
     override fun onDestroy() {
         super.onDestroy()
-        mapView.onDestroy()
+        if (::mapView.isInitialized) {
+            mapView.onDestroy()
+        }
     }
     override fun onLowMemory() {
         super.onLowMemory()
